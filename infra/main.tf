@@ -2,11 +2,11 @@ terraform {
   required_providers {
     aws = {
       source  = "hashicorp/aws"
-      version = "~> 3.27"
+      version = "~> 4.16"
     }
   }
 
-  required_version = ">= 0.14.9"
+  required_version = ">= 1.2.0"
 }
 
 provider "aws" {
@@ -46,7 +46,7 @@ resource "aws_default_subnet" "subnet_1" {
   availability_zone = "${var.regiao_aws}a"
 }
 
-resource "aws-aws_default_subnet" "subnet_2" {
+resource "aws_default_subnet" "subnet_2" {
   availability_zone = "${var.regiao_aws}b"  
 }
 
