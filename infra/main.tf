@@ -22,7 +22,7 @@ resource "aws_launch_template" "maquina" {
     Name = "Machine-TAP"
   }
   security_group_names = [ var.grupodeseguranca ]
-  user_data = filebase64(ansible.sh)
+  user_data = filebase64("ansible.sh")
 }
 
 resource "aws_key_pair" "chaveSSH" {
@@ -31,7 +31,7 @@ resource "aws_key_pair" "chaveSSH" {
 }
 
 resource "aws_autoscaling_group" "grupo" {
-  availability_zones = [ "${var.regiao_aws}a", "${var.regiao_aws}b" ]
+  availability_zones = [ "${var.regiao_aws}a", "${var.regiao_aws}c" ]
   name = var.nomeGrupo
   max_size = var.maximo
   min_size = var.minimo
@@ -39,7 +39,7 @@ resource "aws_autoscaling_group" "grupo" {
     id = aws_launch_template.maquina.id
     version = "$Latest"
   }
-  target_group_arns = [ aws_lb-aws_lb_target_group.aws_lb_target_group.alvoLoadBalancer.arn ]
+  target_group_arns = [ aws_lb_target_group.alvoLoadBalancer.arn ]
 }
 
 resource "aws_default_subnet" "subnet_1" {
@@ -47,7 +47,7 @@ resource "aws_default_subnet" "subnet_1" {
 }
 
 resource "aws_default_subnet" "subnet_2" {
-  availability_zone = "${var.regiao_aws}b"  
+  availability_zone = "${var.regiao_aws}c"  
 }
 
 resource "aws_lb" "loadBalancer" {
@@ -72,5 +72,17 @@ resource "aws_lb_listener" "entradaLoadBalancer" {
   default_action {
     type = "forward"
     target_group_arn = aws_lb_target_group.alvoLoadBalancer.arn
+  }
+}
+
+resource "aws_autoscaling_policy" "escala-producao" {
+  name = "terraform-escala"
+  autoscaling_group_name = var.nomeGrupo
+  policy_type = "TargetTrackingScaling"
+  target_tracking_configuration {
+    predefined_metric_specification {
+      predefined_metric_type = "ASGAvarageCPUUtilization"
+    }
+    target_value = 50.0
   }
 }
